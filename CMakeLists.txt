@@ -62,6 +62,10 @@ find_package(Boost 1.83.0 REQUIRED COMPONENTS
     program_options
 )
 
+find_package(OpenSSL REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
+
+
 # FetchContent_Declare(
 #     googletest
 #     GIT_REPOSITORY https://github.com/google/googletest.git
@@ -78,10 +82,13 @@ find_package(Boost 1.83.0 REQUIRED COMPONENTS
 
 
 add_executable(${PROJECT_NAME} 
+    src/common/traits.h
+
     src/main.cpp
 
     src/logger/logger.cpp
     src/net/websocket_client_impl.cpp
+    src/net/websocket_client_impl.hpp
 )
 
 target_include_directories(${PROJECT_NAME}
@@ -98,6 +105,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Boost::system
     Boost::thread
     Boost::filesystem
+    OpenSSL::SSL
+    OpenSSL::Crypto
 )
 
 # enable_testing()

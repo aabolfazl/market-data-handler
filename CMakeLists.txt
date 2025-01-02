@@ -79,6 +79,9 @@ find_package(Boost 1.83.0 REQUIRED COMPONENTS
 
 add_executable(${PROJECT_NAME} 
     src/main.cpp
+
+    src/logger/logger.cpp
+    src/net/websocket_client_impl.cpp
 )
 
 target_include_directories(${PROJECT_NAME}

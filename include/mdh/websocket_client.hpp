@@ -13,9 +13,9 @@
 
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/io_context.hpp>
-#include <boost/asio/ssl.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/beast/core.hpp>
+#include <boost/beast/ssl.hpp>
 #include <boost/beast/websocket.hpp>
 #include <iostream>
 #include <string>
@@ -28,17 +28,20 @@ namespace beast = boost::beast;
 namespace websocket = beast::websocket;
 namespace asio = boost::asio;
 
-
-
 namespace mdh {
 
 class websocket_client {
 
 public:
-    virtual auto on_resolse(beast::error_code ec, asio::ip::tcp::resolver::results_type results) noexcept -> void = 0;
+    virtual auto on_resolse(
+        beast::error_code ec,
+        asio::ip::tcp::resolver::results_type results
+    ) noexcept -> void = 0;
 
-    virtual auto on_connect(beast::error_code ec, asio::ip::tcp::resolver::results_type::endpoint_type ep) noexcept
-        -> void = 0;
+    virtual auto on_connect(
+        beast::error_code ec,
+        asio::ip::tcp::resolver::results_type::endpoint_type ep
+    ) noexcept -> void = 0;
 
     virtual auto on_ssl_handshake(beast::error_code ec) noexcept -> void = 0;
 

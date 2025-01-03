@@ -12,7 +12,6 @@
 #include "mdh/websocket_client.hpp"
 
 namespace mdh {
-
 class websocket_client_impl : public websocket_client, public std::enable_shared_from_this<websocket_client_impl> {
 
 public:
@@ -22,10 +21,15 @@ public:
     auto start() noexcept -> void;
 
 private:
-    auto on_resolse(beast::error_code ec, asio::ip::tcp::resolver::results_type results) noexcept -> void override;
+    auto on_resolse(
+        beast::error_code ec,
+        asio::ip::tcp::resolver::results_type results
+    ) noexcept -> void override;
 
-    auto on_connect(beast::error_code ec, asio::ip::tcp::resolver::results_type::endpoint_type ep) noexcept
-        -> void override;
+    auto on_connect(
+        beast::error_code ec,
+        asio::ip::tcp::resolver::results_type::endpoint_type ep
+    ) noexcept -> void override;
 
     auto on_ssl_handshake(beast::error_code ec) noexcept -> void override;
 
@@ -43,7 +47,7 @@ private:
     std::string port_;
     std::string target_;
     asio::ip::tcp::resolver resolver_;
-    // beast::flat_buffer buffer_;
+    beast::flat_buffer buffer_;
 
     websocket::stream<boost::asio::ssl::stream<beast::tcp_stream>> ws_;
 };

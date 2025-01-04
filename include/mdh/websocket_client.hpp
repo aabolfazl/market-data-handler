@@ -30,6 +30,9 @@ namespace asio = boost::asio;
 
 namespace mdh {
 
+using message_handler = std::function<void(std::string_view)>;
+using update_handler = std::function<void(std::string_view)>;
+
 class websocket_client {
 
 public:

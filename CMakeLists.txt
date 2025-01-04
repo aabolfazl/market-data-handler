@@ -6,9 +6,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g3 -O0")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined")
+# set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g3 -O0")
+# set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer")
+# set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined")
 
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
@@ -34,6 +34,7 @@ endif()
 include(FetchContent)
 set(FETCHCONTENT_QUIET OFF)
 
+# External dependencies
 FetchContent_Declare(
     fmt
     GIT_REPOSITORY https://github.com/fmtlib/fmt.git
@@ -55,6 +56,18 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(nlohmann_json)
 
+set(BENCHMARK_ENABLE_TESTING OFF)
+set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
+set(BENCHMARK_ENABLE_INSTALL OFF)
+
+FetchContent_Declare(
+    benchmark
+    GIT_REPOSITORY https://github.com/google/benchmark.git
+    GIT_TAG v1.8.3
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(benchmark)
+
 find_package(Boost 1.83.0 REQUIRED COMPONENTS
     system
     thread
@@ -65,27 +78,9 @@ find_package(Boost 1.83.0 REQUIRED COMPONENTS
 find_package(OpenSSL REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
 
-
-# FetchContent_Declare(
-#     googletest
-#     GIT_REPOSITORY https://github.com/google/googletest.git
-#     GIT_TAG v1.14.0
-# )
-# FetchContent_MakeAvailable(googletest)
-
-# FetchContent_Declare(
-#     benchmark
-#     GIT_REPOSITORY https://github.com/google/benchmark.git
-#     GIT_TAG v1.8.3
-# )
-# FetchContent_MakeAvailable(benchmark)
-
-
 add_executable(${PROJECT_NAME} 
     src/common/traits.h
-
     src/main.cpp
-
     src/logger/logger.cpp
     src/net/websocket_client_impl.cpp
     src/net/websocket_client_impl.hpp
@@ -108,7 +103,4 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     OpenSSL::SSL
     OpenSSL::Crypto
 )
-
-# enable_testing()
-# add_subdirectory(test)
-# add_subdirectory(benchmark)
+add_subdirectory(benchmark)

@@ -18,7 +18,7 @@ websocket_client_impl::websocket_client_impl(
     asio::ssl::context& ctx,
     const std::string& host,
     const std::string& port
-) : ioc_(ioc), ctx_(ctx), host_(host), port_(port), resolver_(ioc), ws_(ioc, ctx) {
+) noexcept : ioc_(ioc), ctx_(ctx), host_(host), port_(port), resolver_(ioc), ws_(ioc, ctx) {
     TRACE_LOG("websocket_client_impl constructor");
 }
 
@@ -96,26 +96,77 @@ auto websocket_client_impl::on_handshake(beast::error_code ec) noexcept -> void 
         return;
     }
 
+    auto data = nlohmann::json {
+        {"method", "SUBSCRIBE"},
+        {"params", {"btcusdt@aggTrade", "btcusdt@depth","btcusdt@trade","etcusdt@aggTrade", "etcusdt@depth","etcusdt@trade"}},
+        {"id", 1}
+    };
+
+    send_req(data,[](std::string_view p){
+        ERROR_LOG("------------- {}", p);
+    });
+
     ws_.async_read(buffer_, beast::bind_front_handler(&websocket_client_impl::on_read, shared_from_this()));
+}
+
+auto websocket_client_impl::send_req(nlohmann::json& request, message_handler handler) noexcept -> void{
+    int token = ++last_token;
+    request["id"] = std::to_string(token);
+
+    on_air_req_map_[token] = handler;
+
+    auto str = request.dump();
+
+    INFO_LOG("request: {}",str);
+
+    ws_.async_write(
+        asio::buffer(str),
+        [self = shared_from_this()](
+            beast::error_code ec, std::size_t bytes_transferred
+        ) {
+            self->on_write(ec, bytes_transferred); 
+        }
+    );
 }
 
 auto websocket_client_impl::on_write(
     beast::error_code ec,
     std::size_t bytes_transferred
-) noexcept -> void {};
+) noexcept -> void {
+    TRACE_LOG("send request result {}", bytes_transferred);
+};
 
 auto websocket_client_impl::on_read(
     beast::error_code ec,
     std::size_t bytes_transferred
 ) noexcept -> void {
-    TRACE_LOG("on_read {}", bytes_transferred);
+    TRACE_LOG("on_read {} bytes_transferred", bytes_transferred);
 
     if (ec) {
         ERROR_LOG("on_read: {}", ec.message());
         return;
     }
 
+    std::string response(static_cast<char*>(buffer_.data().data()), bytes_transferred);
     buffer_.consume(bytes_transferred);
+
+    auto res_json = nlohmann::json::parse(response);
+
+    if (res_json.contains("id") && !res_json["id"].is_null()) {
+        int id = std::stoi(res_json["id"].get<std::string>());
+        TRACE_LOG("id is {}",id);
+        auto it = on_air_req_map_.find(id);
+        if (it != on_air_req_map_.end()) {
+            std::string json_str = res_json.dump();
+            it->second(json_str);
+        } else {
+            WARN_LOG("No handler found for ID: {}", id);
+        }
+    } else {
+        // it is an update
+        INFO_LOG(response);
+    }
+
 
     ws_.async_read(buffer_, beast::bind_front_handler(&websocket_client_impl::on_read, shared_from_this()));
 }

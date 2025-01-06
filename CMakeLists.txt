@@ -84,6 +84,8 @@ add_executable(${PROJECT_NAME}
     src/logger/logger.cpp
     src/net/websocket_client_impl.cpp
     src/net/websocket_client_impl.hpp
+
+    src/io/io_executor_impl.cpp
 )
 
 target_include_directories(${PROJECT_NAME}

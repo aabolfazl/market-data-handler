@@ -9,11 +9,15 @@
  *
  */
 
+#pragma once
+
 #include "mdh/websocket_client.hpp"
 #include <map>
 #include <string>
-
 #include <nlohmann/json.hpp>
+
+#include "mdh/io/io_executor.hpp"
+
 using json = nlohmann::json;
 
 namespace mdh {
@@ -21,7 +25,7 @@ class websocket_client_impl : public websocket_client, public std::enable_shared
 
 public:
     explicit websocket_client_impl(
-        asio::io_context& ioc,
+        io_executor& io_exec,
         asio::ssl::context& ctx,
         const std::string& host,
         const std::string& port
@@ -52,8 +56,8 @@ private:
 
     auto on_close(beast::error_code ec) noexcept -> void override;
 
-    asio::io_context& ioc_;
-    asio::ssl::context& ctx_;
+    io_executor& io_executor_;
+    asio::ssl::context& ssl_ctx_;
     std::string host_;
     std::string port_;
     std::string target_;

@@ -56,5 +56,6 @@ public:
 
     virtual auto on_close(beast::error_code ec) noexcept -> void = 0;
 };
+using websocket_client_ptr = std::unique_ptr<websocket_client>;
 
 } // namespace mdh

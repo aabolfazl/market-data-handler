@@ -17,11 +17,15 @@ namespace mdh {
 
 class io_executor_impl : public io_executor {
 
+public:
     explicit io_executor_impl(uint core) noexcept;
     ~io_executor_impl() override;
     auto start() noexcept -> void override;
     auto stop() noexcept -> void override;
     auto context() noexcept -> boost::asio::io_context& override;
+    auto running() const noexcept -> bool override;
+    auto join() noexcept -> void override;
+    
 
 private:
     boost::asio::io_context io_context_;

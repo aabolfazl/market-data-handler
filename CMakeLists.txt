@@ -81,10 +81,11 @@ include_directories(${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
 add_executable(${PROJECT_NAME} 
     src/common/traits.h
     src/main.cpp
-    src/logger/logger.cpp
+    src/logger/logger.hpp
     src/net/websocket_client_impl.cpp
     src/net/websocket_client_impl.hpp
 
+    src/io/io_executor_impl.hpp
     src/io/io_executor_impl.cpp
 )
 

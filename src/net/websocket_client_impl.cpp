@@ -10,15 +10,15 @@
  */
 
 #include "websocket_client_impl.hpp"
-#include "logger/logger.cpp"
+#include "logger/logger.hpp"
 
 namespace mdh {
 websocket_client_impl::websocket_client_impl(
-    asio::io_context& ioc,
-    asio::ssl::context& ctx,
+    io_executor& io_exec,
+    asio::ssl::context& ssl_ctx,
     const std::string& host,
     const std::string& port
-) noexcept : ioc_(ioc), ctx_(ctx), host_(host), port_(port), resolver_(ioc), ws_(ioc, ctx) {
+) noexcept : io_executor_(io_exec), ssl_ctx_(ssl_ctx), host_(host), port_(port), resolver_(io_exec.context()), ws_(io_exec.context(), ssl_ctx) {
     TRACE_LOG("websocket_client_impl constructor");
 }
 
@@ -40,12 +40,12 @@ auto websocket_client_impl::on_resolse(
     beast::error_code ec,
     asio::ip::tcp::resolver::results_type results
 ) noexcept -> void {
-    TRACE_LOG("on_resolse");
-
     if (ec) {
         ERROR_LOG("on_resolse: {}", ec.message());
         return;
     }
+
+    TRACE_LOG("on_resolse");
 
     beast::get_lowest_layer(ws_).async_connect(
         results,

@@ -10,6 +10,7 @@
  */
 
 #include "io_executor_impl.hpp"
+#include "logger/logger.hpp"
 
 namespace mdh {
 
@@ -52,6 +53,16 @@ auto io_executor_impl::stop() noexcept -> void {
 
 auto io_executor_impl::context() noexcept -> boost::asio::io_context& {
     return io_context_;
+}
+
+auto io_executor_impl::running() const noexcept -> bool{
+    return running_.load();
+}
+
+auto io_executor_impl::join() noexcept -> void {
+    if(thread_.joinable()){
+        thread_.join();
+    }
 }
 
 }// namespace mdh

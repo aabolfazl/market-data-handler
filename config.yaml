@@ -1,0 +1,18 @@
+cores:
+  total: 8
+  websockets_per_core: 2
+
+symbols:
+  - group: "major"
+    symbols: ["BTCUSDT", "ETHUSDT", "BNBUSDT"]
+    core_id: 0
+  - group: "alts1"
+    symbols: ["ADAUSDT", "DOGEUSDT", "MATICUSDT"]
+    core_id: 1
+  - group: "alts2"
+    symbols: ["SOLUSDT", "DOTUSDT", "LINKUSDT"]
+    core_id: 2
+
+websocket:
+  max_symbols_per_connection: 200
+  reconnect_delay_ms: 1000

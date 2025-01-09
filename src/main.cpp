@@ -19,36 +19,120 @@
 #include <iostream>
 #include <memory>
 #include <string>
-#include "logger/logger.hpp"
 
-#include "net/websocket_client_impl.hpp"
+#include "mdh/config/config.hpp"
 #include "io/io_executor_impl.hpp"
+#include "logger/logger.hpp"
+#include "net/websocket_client_impl.hpp"
+#include "mdh_app.hpp"
 
 namespace beast = boost::beast;
 namespace websocket = beast::websocket;
 namespace asio = boost::asio;
 
+inline auto create_test_config() -> mdh::config {
+    mdh::config cfg{
+        .total_cores = 10,
+        .websockets_per_core = 2,
+        .max_symbols_per_connection = 200,
+        .reconnect_delay_ms = 1000,
+        .symbol_groups = {
+            mdh::symbol_group{
+                .group = "major_btc",
+                .symbols = {
+                    "BTCUSDT", "BTCBUSD", "BTCUSDC", 
+                    "BTCEUR", "BTCGBP", "BTCAUD"
+                },
+                .core_id = 0
+            },
+            mdh::symbol_group{
+                .group = "major_eth",
+                .symbols = {
+                    "ETHUSDT", "ETHBTC", "ETHBUSD", 
+                    "ETHEUR", "ETHGBP", "ETHAUD"
+                },
+                .core_id = 1
+            },
+            mdh::symbol_group{
+                .group = "bnb_pairs",
+                .symbols = {
+                    "BNBUSDT", "BNBBTC", "BNBETH", 
+                    "BNBBUSD", "BNBEUR", "BNBGBP"
+                },
+                .core_id = 2
+            },
+            mdh::symbol_group{
+                .group = "defi_major",
+                .symbols = {
+                    "AAVEUSDT", "UNIUSDT", "SUSHIUSDT",
+                    "MKRUSDT", "COMPUSDT", "YFIUSDT"
+                },
+                .core_id = 3
+            },
+            mdh::symbol_group{
+                .group = "layer1",
+                .symbols = {
+                    "SOLUSDT", "ADAUSDT", "DOTUSDT",
+                    "AVAXUSDT", "NEARUSDT", "FTMUSDT"
+                },
+                .core_id = 4
+            },
+            mdh::symbol_group{
+                .group = "layer2",
+                .symbols = {
+                    "MATICUSDT", "ARBUSDT", "OPUSDT",
+                    "LDOUSDT", "IMXUSDT", "STXUSDT"
+                },
+                .core_id = 5
+            },
+            mdh::symbol_group{
+                .group = "stables",
+                .symbols = {
+                    "BUSDUSDT", "USDCUSDT", "EUROUSDT",
+                    "GBPUSDT", "AUDUSDT", "DAIUSDT"
+                },
+                .core_id = 6
+            },
+            mdh::symbol_group{
+                .group = "meme",
+                .symbols = {
+                    "DOGEUSDT", "SHIBUSDT", "PEPEUSDT",
+                    "FLOKIUSDT", "BONKUSDT", "WOJAKUSDT"
+                },
+                .core_id = 7
+            },
+            mdh::symbol_group{
+                .group = "gaming",
+                .symbols = {
+                    "SANDUSDT", "MANAUSDT", "AXSUSDT",
+                    "GALAUSDT", "ENJUSDT", "CHZUSDT"
+                },
+                .core_id = 8
+            },
+            mdh::symbol_group{
+                .group = "emerging",
+                .symbols = {
+                    "INJUSDT", "SUIUSDT", "FETUSDT",
+                    "KASTAUSDT", "PYRUSDT", "STRKUSDT"
+                },
+                .core_id = 9
+            }
+        }
+    };
+    
+    return cfg;
+}
 
 int main() {
     std::cout << "Market Data Handler project going to the moon 🚀!" << std::endl;
     mdh::logger::init();
 
-    const std::string host = "stream.binance.com";
-    const std::string port = "9443";
+    mdh::mdh_app app;
+    auto config = create_test_config();
 
-    mdh::io_executor_impl io_exec(0);
-
-    asio::ssl::context ssl_ctx(asio::ssl::context::tlsv12_client);
-    ssl_ctx.set_default_verify_paths();
-
-    for (int i = 0; i < 100; i++) {
-        auto ws_client = std::make_shared<mdh::websocket_client_impl>(io_exec, ssl_ctx, host, port);
-        ws_client->start();
-    }
-
-    io_exec.start();
-
-    io_exec.join();
+    app.init(config);
+    
+    app.run();
 
     return 0;
 }

@@ -78,9 +78,11 @@ find_package(Boost 1.83.0 REQUIRED COMPONENTS
 find_package(OpenSSL REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
 
-add_executable(${PROJECT_NAME} 
+add_executable(${PROJECT_NAME}
     src/common/traits.h
     src/main.cpp
+    src/mdh_app.hpp
+    src/mdh_app.cpp
     src/logger/logger.hpp
     src/net/websocket_client_impl.cpp
     src/net/websocket_client_impl.hpp
@@ -91,9 +93,9 @@ add_executable(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME}
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
     PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE

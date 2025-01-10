@@ -16,21 +16,44 @@
 
 
 namespace mdh {
+enum class stream_type {
+    depth,
+    trade,
+};
 
-struct symbol_group {
-    std::string group;
+struct connection_config {
     std::vector<std::string> symbols;
+    std::vector<stream_type> streams;
+    std::string endpoint;
+    std::string port;
     uint32_t core_id;
-};
 
-class config {
-public:
-    uint32_t total_cores;
-    uint32_t websockets_per_core;
-    uint32_t max_symbols_per_connection;
+    uint32_t max_message_rate{5000};
+    bool auto_reconnect{true};
+    uint32_t ping_interval_ms{60 * 1000 * 3};
     uint32_t reconnect_delay_ms;
-    std::vector<symbol_group> symbol_groups;
-
-    static auto from_file(const std::string& path) -> config;
 };
-} // namespace mdh::config
+
+struct worker_config {
+    std::string name;
+    uint32_t core_id;
+    std::vector<connection_config> connections;
+
+    size_t order_book_depth{20};
+    bool maintain_full_depth{false};
+    size_t message_queue_size{1000};
+};
+
+struct market_data_config {
+    std::vector<worker_config> workers;
+
+    bool enable_snapshots{true};
+    uint32_t snapshot_interval{1000};
+
+    size_t pre_allocated_books{1000};
+    size_t memory_pool_size{1 << 20};
+
+    bool enable_metrics{true};
+    uint32_t metrics_port{9090};
+};
+} // namespace mdh

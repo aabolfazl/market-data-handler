@@ -23,7 +23,7 @@ public:
     explicit server_instance(
         std::shared_ptr<io_executor> io_executor,
         std::shared_ptr<asio::ssl::context> ssl_ctx,
-        config& config,
+        const market_data_config& config,
         uint32_t core_id
     ) noexcept;
     ~server_instance();
@@ -32,7 +32,7 @@ public:
     auto stop() noexcept -> void;
 
 private:
-    config& config_;
+    const market_data_config& config_;
     uint32_t core_id_;
     io_executor_ptr io_exec_;
     std::shared_ptr<asio::ssl::context> ssl_ctx_;

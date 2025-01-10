@@ -31,12 +31,12 @@ namespace mdh {
 
 class mdh_app {
 public:
-    auto init(config& config) noexcept -> void;
+    explicit mdh_app(const market_data_config& config) noexcept;
+    auto init() noexcept -> void;
     auto run() noexcept -> void;
 
 private:
-    config config_;
-
+    const market_data_config& config_;
     std::unordered_map<uint32_t, std::unique_ptr<server_instance>> servers_map_;
 };
 

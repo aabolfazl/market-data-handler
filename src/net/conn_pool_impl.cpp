@@ -18,17 +18,15 @@ namespace mdh {
 conn_pool_impl::conn_pool_impl(
     const std::shared_ptr<io_executor>& io_exec,
     const std::shared_ptr<asio::ssl::context>& ctx,
-    const std::string& host,
-    const std::string& port,
-    uint32_t max_idle_connections,
-    uint32_t websockets_per_core
-) noexcept : io_exec_(io_exec) {
-    for (uint32_t i = 0; i < websockets_per_core; ++i) {
+    uint32_t core_id,
+    const market_data_config& config
+) noexcept : io_exec_(io_exec), config_(config) {
+    for (uint32_t i = 0; i < config.workers[core_id].connections.size(); ++i) {
         auto client = std::make_shared<websocket_client_impl>(
             io_exec,
             ctx,
-            host,
-            port
+            config.workers[core_id].connections[i].endpoint,
+            config.workers[core_id].connections[i].port
         );
 
         client->open();

@@ -14,19 +14,23 @@
 #include "io/io_executor_impl.hpp"
 
 namespace mdh {
-auto mdh_app::init(config& config) noexcept -> void {
+
+mdh_app::mdh_app(const market_data_config& config) noexcept : config_(config) {
+    TRACE_LOG("mdh_app constructor");
+}
+
+auto mdh_app::init() noexcept -> void {
     TRACE_LOG("mdh_app::init()");
 
     auto ssl_ctx = std::make_shared<asio::ssl::context>(asio::ssl::context::tlsv12_client);
     ssl_ctx->set_default_verify_paths();
 
-    for(int i = 0; i < config.total_cores; i++){
-        INFO_LOG("Core ID: {} starting...", i);
+    for (auto worker : config_.workers) {
+        INFO_LOG("Core ID: {} starting...", worker.core_id);
 
-        const auto group = config.symbol_groups[i];
-        const auto io_exec_ = std::make_shared<io_executor_impl>(group.core_id);
-        auto server = std::make_unique<server_instance>(io_exec_,ssl_ctx,config, group.core_id); 
-        servers_map_[group.core_id] = std::move(server);
+        const auto io_exec_ = std::make_shared<io_executor_impl>(worker.core_id);
+        auto server = std::make_unique<server_instance>(io_exec_, ssl_ctx, config_, worker.core_id);
+        servers_map_[worker.core_id] = std::move(server);
     }
 }
 

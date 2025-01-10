@@ -8,7 +8,7 @@ namespace mdh {
 server_instance::server_instance(
     std::shared_ptr<io_executor> io_executor,
     std::shared_ptr<asio::ssl::context> ssl_ctx,
-    config& config,
+    const market_data_config& config,
     uint32_t core_id
 ) noexcept : 
     io_exec_(std::move(io_executor)),
@@ -22,11 +22,9 @@ server_instance::server_instance(
     conn_pool_ = std::make_unique<conn_pool_impl>(
         io_exec_,
         ssl_ctx_,
-        "stream.binance.com",
-        "9443",
-        0,
-        config_.websockets_per_core
-    );
+        core_id_,
+        config_
+    );    
 }
 
 auto server_instance::start() noexcept -> void {

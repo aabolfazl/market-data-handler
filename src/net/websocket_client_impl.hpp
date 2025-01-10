@@ -11,29 +11,31 @@
 
 #pragma once
 
-#include "mdh/websocket_client.hpp"
-#include <map>
-#include <string>
 #include <nlohmann/json.hpp>
+#include <string>
 
+#include "mdh/websocket_client.hpp"
 #include "mdh/io/io_executor.hpp"
 
 using json = nlohmann::json;
+namespace websocket = beast::websocket;
 
 namespace mdh {
 class websocket_client_impl : public websocket_client, public std::enable_shared_from_this<websocket_client_impl> {
 
 public:
     explicit websocket_client_impl(
-        io_executor& io_exec,
-        asio::ssl::context& ctx,
+        const std::shared_ptr<io_executor>& io_exec,
+        const std::shared_ptr<asio::ssl::context>& ctx,
         const std::string& host,
         const std::string& port
     ) noexcept;
+    ~websocket_client_impl();
 
     auto send_req(nlohmann::json& request, message_handler handler) noexcept -> void;
 
-    auto start() noexcept -> void;
+    auto open() noexcept -> void override;
+    auto close() noexcept -> void override;
 
 private:
     auto on_resolse(
@@ -56,8 +58,8 @@ private:
 
     auto on_close(beast::error_code ec) noexcept -> void override;
 
-    io_executor& io_executor_;
-    asio::ssl::context& ssl_ctx_;
+    const std::shared_ptr<io_executor>& io_executor_;
+    const std::shared_ptr<asio::ssl::context>& ssl_ctx_;
     std::string host_;
     std::string port_;
     std::string target_;

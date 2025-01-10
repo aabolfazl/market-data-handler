@@ -14,16 +14,21 @@
 
 namespace mdh {
 websocket_client_impl::websocket_client_impl(
-    io_executor& io_exec,
-    asio::ssl::context& ssl_ctx,
+    const std::shared_ptr<io_executor>& io_exec,
+    const std::shared_ptr<asio::ssl::context>& ssl_ctx,
     const std::string& host,
     const std::string& port
-) noexcept : io_executor_(io_exec), ssl_ctx_(ssl_ctx), host_(host), port_(port), resolver_(io_exec.context()), ws_(io_exec.context(), ssl_ctx) {
-    TRACE_LOG("websocket_client_impl constructor");
+) noexcept : io_executor_(io_exec),
+    ssl_ctx_(ssl_ctx),
+    host_(host),
+    port_(port),
+    resolver_(io_exec->context()), ws_(io_exec->context(), *ssl_ctx)
+{
+    TRACE_LOG("websocket_client_impl constructor host: {} port: {}", host_, port_);
 }
 
-auto websocket_client_impl::start() noexcept -> void {
-    TRACE_LOG("start");
+auto websocket_client_impl::open() noexcept -> void {
+    TRACE_LOG("start websocket_client_impl");
 
     resolver_.async_resolve(
         host_, port_,
@@ -167,10 +172,36 @@ auto websocket_client_impl::on_read(
         INFO_LOG(response);
     }
 
-
-    ws_.async_read(buffer_, beast::bind_front_handler(&websocket_client_impl::on_read, shared_from_this()));
+    ws_.async_read(
+        buffer_, 
+        beast::bind_front_handler(&websocket_client_impl::on_read, shared_from_this())
+    );
 }
 
-auto websocket_client_impl::on_close(beast::error_code ec) noexcept -> void {}
+auto websocket_client_impl::close() noexcept -> void {
+    TRACE_LOG("close websocket_client_impl on");
+    
+    ws_.async_close(
+        websocket::close_code::normal, 
+        [self = shared_from_this()](
+            beast::error_code ec
+        ) {
+            self->on_close(ec);
+        }
+    );
+}
+
+auto websocket_client_impl::on_close(beast::error_code ec) noexcept -> void {
+    TRACE_LOG("on_close");
+
+    if (ec) {
+        ERROR_LOG("on_close: {}", ec.message());
+        return;
+    }
+}
+
+websocket_client_impl::~websocket_client_impl() {
+    TRACE_LOG("websocket_client_impl destructor");
+}
 
 } // namespace mdh

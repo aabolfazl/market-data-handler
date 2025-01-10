@@ -14,14 +14,6 @@
 
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/io_context.hpp>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <thread>
-#include <atomic>
-#include <memory>
-
-namespace asio = boost::asio;
 
 namespace mdh {
 
@@ -30,10 +22,11 @@ public:
     virtual ~io_executor() = default;
     virtual auto start() noexcept -> void = 0;
     virtual auto stop() noexcept -> void = 0;
+    virtual auto join() noexcept -> void = 0;
+
     virtual auto context() noexcept -> boost::asio::io_context& = 0;
     virtual auto running() const noexcept -> bool = 0;
-
-    virtual auto join() noexcept -> void = 0;
+    virtual auto id() const noexcept -> uint = 0;
 };
 
 using io_executor_ptr = std::shared_ptr<io_executor>;

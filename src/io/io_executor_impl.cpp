@@ -59,8 +59,12 @@ auto io_executor_impl::running() const noexcept -> bool{
     return running_.load();
 }
 
+auto io_executor_impl::id() const noexcept -> uint {
+    return core_id_;
+}
+
 auto io_executor_impl::join() noexcept -> void {
-    if(thread_.joinable()){
+    if (thread_.joinable()) {
         thread_.join();
     }
 }

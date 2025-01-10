@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <thread>
 #include "mdh/io/io_executor.hpp"
 
 namespace mdh {
@@ -25,7 +26,7 @@ public:
     auto context() noexcept -> boost::asio::io_context& override;
     auto running() const noexcept -> bool override;
     auto join() noexcept -> void override;
-    
+    auto id() const noexcept -> uint override;
 
 private:
     boost::asio::io_context io_context_;

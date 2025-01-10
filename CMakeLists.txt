@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
+cmake_policy(SET CMP0167 NEW)
 project(market-data-handler VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_BUILD_TYPE Debug)
@@ -79,13 +80,22 @@ find_package(OpenSSL REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
 
 add_executable(${PROJECT_NAME}
-    src/common/traits.h
     src/main.cpp
+
     src/mdh_app.hpp
     src/mdh_app.cpp
+
+    src/common/traits.h
+
     src/logger/logger.hpp
-    src/net/websocket_client_impl.cpp
+
+    src/server_instance.hpp
+    src/server_instance.cpp
+
+    src/net/conn_pool_impl.hpp
+    src/net/conn_pool_impl.cpp
     src/net/websocket_client_impl.hpp
+    src/net/websocket_client_impl.cpp
 
     src/io/io_executor_impl.hpp
     src/io/io_executor_impl.cpp

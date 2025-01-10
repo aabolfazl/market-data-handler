@@ -9,26 +9,11 @@
  *
  */
 
-#include <boost/asio/dispatch.hpp>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/ssl.hpp>
-#include <boost/asio/strand.hpp>
-#include <boost/beast/core.hpp>
-#include <boost/beast/websocket.hpp>
-#include <boost/json.hpp>
 #include <iostream>
-#include <memory>
-#include <string>
 
-#include "mdh/config/config.hpp"
-#include "io/io_executor_impl.hpp"
 #include "logger/logger.hpp"
-#include "net/websocket_client_impl.hpp"
+#include "mdh/config/config.hpp"
 #include "mdh_app.hpp"
-
-namespace beast = boost::beast;
-namespace websocket = beast::websocket;
-namespace asio = boost::asio;
 
 inline auto create_test_config() -> mdh::config {
     mdh::config cfg{

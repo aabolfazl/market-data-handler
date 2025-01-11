@@ -16,7 +16,8 @@
 
 
 namespace mdh {
-enum class stream_type {
+
+enum stream_type {
     depth,
     trade,
 };
@@ -32,6 +33,16 @@ struct connection_config {
     bool auto_reconnect{true};
     uint32_t ping_interval_ms{60 * 1000 * 3};
     uint32_t reconnect_delay_ms;
+
+    static std::string type_to_string(stream_type type) {
+        switch (type) {
+        case stream_type::depth:
+            return "depth";
+        case stream_type::trade:
+            return "trade";
+        }
+        return "unknown";
+    }
 };
 
 struct worker_config {

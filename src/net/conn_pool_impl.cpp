@@ -24,20 +24,30 @@ conn_pool_impl::conn_pool_impl(
     const auto& worker_config = config.workers[core_id];
     clients_.reserve(worker_config.connections.size());
 
-    for (uint32_t i = 0; i < config.workers[core_id].connections.size(); ++i) {
+    for (uint32_t i = 0; i < worker_config.connections.size(); ++i) {
+        auto& conn_config = worker_config.connections[i];
+
         auto client = std::make_shared<websocket_client_impl>(
             io_exec,
             ctx,
-            config.workers[core_id].connections[i].endpoint,
-            config.workers[core_id].connections[i].port
+            conn_config.endpoint,
+            conn_config.port
         );
 
-        client->open();
         client->set_update_handler([&](std::string_view msg) {
             on_messaget_received(msg);
         });
 
-        client->set_status_handler([&](
+        auto watch_list = std::vector<std::string>{};
+        watch_list.reserve(conn_config.symbols.size() * conn_config.streams.size());
+
+        for (const auto& symbol : conn_config.symbols) {
+            for (const auto& stream : conn_config.streams) {
+                watch_list.push_back(symbol + "@" + connection_config::type_to_string(stream));
+            }
+        }
+
+        client->set_status_handler([&, watch_list](
             event_type type,
             websocket_client_ptr client_ptr
         ) {
@@ -46,12 +56,11 @@ conn_pool_impl::conn_pool_impl(
                 
                 auto data = nlohmann::json {
                     {"method", "SUBSCRIBE"},
-                    {"params", {"btcusdt@aggTrade", "btcusdt@depth","btcusdt@trade","etcusdt@aggTrade", "etcusdt@depth","etcusdt@trade"}},
+                    {"params", watch_list},
                     {"id", 1}
                 };
 
-                client_ptr->send_req(
-                    data,[](
+                client_ptr->send_req(data,[](
                     std::string_view p
                 ){
                     ERROR_LOG("subscribtion reqeust send {}", p);
@@ -59,6 +68,7 @@ conn_pool_impl::conn_pool_impl(
             }
         });
 
+        client->open();
         clients_.push_back(std::move(client));
     }
 }

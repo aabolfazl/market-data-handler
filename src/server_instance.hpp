@@ -41,7 +41,6 @@ public:
 private:
     auto process_market_message(std::string_view msg) noexcept -> void;
 
-
     const market_data_config& config_;
     uint32_t core_id_;
     io_executor_ptr io_exec_;

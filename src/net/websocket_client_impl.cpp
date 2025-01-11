@@ -148,7 +148,7 @@ auto websocket_client_impl::on_read(
     beast::error_code ec,
     std::size_t bytes_transferred
 ) noexcept -> void {
-    TRACE_LOG("on_read {} bytes_transferred", bytes_transferred);
+    TRACE_LOG("on_read {} bytes_transferred ", bytes_transferred);
     auto start = std::chrono::high_resolution_clock::now();
 
     if (ec) {
@@ -172,7 +172,7 @@ auto websocket_client_impl::on_read(
             std::string json_str = res_json.dump();
             it->second(json_str);
         } else {
-            WARN_LOG("No handler found for ID: {}", id);
+            ERROR_LOG("No handler found for ID: {}", id);
         }
     } else {
         if (update_handler_) {

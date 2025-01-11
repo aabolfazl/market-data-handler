@@ -22,6 +22,9 @@
 namespace asio = boost::asio;
 
 namespace mdh {
+
+using message_callback = std::function<void(std::string_view&)>;
+
 class conn_pool_impl {
 
 public:
@@ -34,10 +37,15 @@ public:
 
     ~conn_pool_impl();
 
+    auto set_message_callback(message_callback cb) noexcept -> void;
+
 private:
+    auto on_messaget_received(std::string_view msg) noexcept -> void;
+
     std::shared_ptr<io_executor> io_exec_;
     std::vector<websocket_client_ptr> clients_;
     const market_data_config& config_;
+    message_callback message_cb_;
 };
 
 } // namespace mdh

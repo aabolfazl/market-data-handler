@@ -47,6 +47,9 @@ auto websocket_client_impl::on_resolse(
 ) noexcept -> void {
     if (ec) {
         ERROR_LOG("on_resolse: {}", ec.message());
+        if (status_handler_) {
+            status_handler_(event_type::on_error, shared_from_this());
+        }
         return;
     }
 
@@ -79,6 +82,9 @@ auto websocket_client_impl::on_ssl_handshake(beast::error_code ec) noexcept -> v
 
     if (ec) {
         ERROR_LOG("on_ssl_handshake: {}", ec.message());
+        if (status_handler_) {
+            status_handler_(event_type::on_error, shared_from_this());
+        }
         return;
     }
 
@@ -98,18 +104,15 @@ auto websocket_client_impl::on_handshake(beast::error_code ec) noexcept -> void 
 
     if (ec) {
         ERROR_LOG("on_handshake: {}", ec.message());
+        if (status_handler_) {
+            status_handler_(event_type::on_error, shared_from_this());
+        }
         return;
     }
 
-    auto data = nlohmann::json {
-        {"method", "SUBSCRIBE"},
-        {"params", {"btcusdt@aggTrade", "btcusdt@depth","btcusdt@trade","etcusdt@aggTrade", "etcusdt@depth","etcusdt@trade"}},
-        {"id", 1}
-    };
-
-    send_req(data,[](std::string_view p){
-        ERROR_LOG("------------- {}", p);
-    });
+    if (status_handler_) {
+        status_handler_(event_type::on_connect, shared_from_this());
+    }
 
     ws_.async_read(buffer_, beast::bind_front_handler(&websocket_client_impl::on_read, shared_from_this()));
 }
@@ -146,9 +149,13 @@ auto websocket_client_impl::on_read(
     std::size_t bytes_transferred
 ) noexcept -> void {
     TRACE_LOG("on_read {} bytes_transferred", bytes_transferred);
+    auto start = std::chrono::high_resolution_clock::now();
 
     if (ec) {
         ERROR_LOG("on_read: {}", ec.message());
+        if (status_handler_) {
+            status_handler_(event_type::on_error, shared_from_this());
+        }
         return;
     }
 
@@ -168,14 +175,27 @@ auto websocket_client_impl::on_read(
             WARN_LOG("No handler found for ID: {}", id);
         }
     } else {
-        // it is an update
-        INFO_LOG(response);
+        if (update_handler_) {
+            update_handler_(response);
+        }
     }
 
     ws_.async_read(
         buffer_, 
         beast::bind_front_handler(&websocket_client_impl::on_read, shared_from_this())
     );
+    
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    WARN_LOG("on_read duration: {} microseconds byte read {}", duration.count(),bytes_transferred);
+}
+
+auto websocket_client_impl::set_update_handler(update_handler handler) noexcept -> void {
+    update_handler_ = std::move(handler);
+}
+
+auto websocket_client_impl::set_status_handler(status_handler handler) noexcept -> void {
+    status_handler_ = std::move(handler);
 }
 
 auto websocket_client_impl::close() noexcept -> void {
@@ -196,6 +216,9 @@ auto websocket_client_impl::on_close(beast::error_code ec) noexcept -> void {
 
     if (ec) {
         ERROR_LOG("on_close: {}", ec.message());
+        if (status_handler_) {
+            status_handler_(event_type::on_error, shared_from_this());
+        }
         return;
     }
 }

@@ -11,16 +11,15 @@
 
 #pragma once
 
-#include <nlohmann/json.hpp>
 #include <string>
 
 #include "mdh/websocket_client.hpp"
 #include "mdh/io/io_executor.hpp"
 
-using json = nlohmann::json;
 namespace websocket = beast::websocket;
 
 namespace mdh {
+
 class websocket_client_impl : public websocket_client, public std::enable_shared_from_this<websocket_client_impl> {
 
 public:
@@ -30,9 +29,12 @@ public:
         const std::string& host,
         const std::string& port
     ) noexcept;
+
     ~websocket_client_impl();
 
-    auto send_req(nlohmann::json& request, message_handler handler) noexcept -> void;
+    auto send_req(nlohmann::json& request, message_handler handler) noexcept -> void override;
+    auto set_update_handler(update_handler handler) noexcept -> void override;
+    auto set_status_handler(status_handler handler) noexcept -> void override;
 
     auto open() noexcept -> void override;
     auto close() noexcept -> void override;
@@ -71,6 +73,9 @@ private:
     std::unordered_map<int, message_handler> on_air_req_map_;
 
     int last_token = 0;
+
+    update_handler update_handler_;
+    status_handler status_handler_;
 };
 
 } // namespace mdh

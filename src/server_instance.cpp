@@ -29,7 +29,15 @@ server_instance::server_instance(
 
 auto server_instance::start() noexcept -> void {
     TRACE_LOG("server_instance::start() core_id: {}", core_id_);
+    conn_pool_->set_message_callback([&](std::string_view msg) {
+        process_market_message(msg);
+    });
+
     io_exec_->start();
+}
+
+auto server_instance::process_market_message(std::string_view msg) noexcept -> void {
+    // TRACE_LOG("server_instance msg: {}", msg);
 }
 
 auto server_instance::stop() noexcept -> void {

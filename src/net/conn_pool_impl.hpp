@@ -23,7 +23,7 @@ namespace asio = boost::asio;
 
 namespace mdh {
 
-using message_callback = std::function<void(std::string_view&)>;
+using message_callback = std::function<void(std::string_view)>;
 
 class conn_pool_impl {
 

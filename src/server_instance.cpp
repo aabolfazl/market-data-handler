@@ -37,7 +37,7 @@ auto server_instance::start() noexcept -> void {
 }
 
 auto server_instance::process_market_message(std::string_view msg) noexcept -> void {
-    // TRACE_LOG("server_instance msg: {}", msg);
+    TRACE_LOG("server_instance msg: {}", msg);
 }
 
 auto server_instance::stop() noexcept -> void {

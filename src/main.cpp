@@ -17,10 +17,10 @@
 
 inline auto create_v1_config() -> mdh::market_data_config {
     const std::vector<std::string> main_pairs = {
-        "BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "XRPUSDT",
-        "ADAUSDT", "DOGEUSDT", "MATICUSDT", "AVAXUSDT", "LINKUSDT",
-        "ETHBTC", "BNBBTC", "SOLBTC", "XRPBTC", "ADABTC",
-        "BTCBUSD", "ETHBUSD", "BNBBUSD", "SOLBUSD", "XRPBUSD"
+        "btcusdt", "ethusdt", "bnbusdt", "solusdt", "xrpusdt",
+        "adausdt", "dogeusdt", "maticusdt", "avaxusdt", "linkusdt",
+        "ethbtc", "bnbbtc", "solbtc", "xrpbtc", "adabtc",
+        "btcbusd", "ethbusd", "bnbbusd", "solbusd", "xrpbusd",
     };
 
     constexpr uint32_t cores = 2;         

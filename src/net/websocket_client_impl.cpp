@@ -144,6 +144,20 @@ auto websocket_client_impl::on_write(
     TRACE_LOG("send request result {}", bytes_transferred);
 };
 
+
+/*
+It is a bad idea to use nlohmann::json as a parameter type for a callback function.
+It is better to use std::string_view or std::string.
+I will fix this or event remove json in the next versions when I focus on performance.
+
+Also we can use a better way to handle the response from the server.
+We can use a buffer to store the response and then parse it.
+This way we can reduce the number of allocations and deallocations.
+
+Also I need to implement a buffer pool to reduce the number of allocations and deallocations,
+and also reduce the memory fragmentation, and reduce the time spent on memory allocation and deallocation.
+
+*/
 auto websocket_client_impl::on_read(
     beast::error_code ec,
     std::size_t bytes_transferred

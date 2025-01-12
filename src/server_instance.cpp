@@ -29,15 +29,31 @@ server_instance::server_instance(
 
 auto server_instance::start() noexcept -> void {
     TRACE_LOG("server_instance::start() core_id: {}", core_id_);
-    conn_pool_->set_message_callback([&](std::string_view msg) {
+    conn_pool_->set_message_callback([&](nlohmann::json& msg) {
         process_market_message(msg);
     });
 
     io_exec_->start();
 }
 
-auto server_instance::process_market_message(std::string_view msg) noexcept -> void {
-    TRACE_LOG("server_instance msg: {}", msg);
+auto server_instance::process_market_message(nlohmann::json& msg) noexcept -> void {
+    // ERROR_LOG("process_market_message: {}", msg["e"].get<std::string>());
+
+    if(msg.contains("e") && msg["e"].get<std::string>() == "trade") {
+        market_message m;
+        m.symbol = msg["s"].get<std::string>();
+        m.type = stream_type::trade;
+        m.timestamp = msg["T"].get<std::uint64_t>();
+        m.price = msg["p"].get<std::string>();
+
+        ERROR_LOG("process_market_message trade symbol: {}", m.symbol);
+    } else if(msg.contains("e") && msg["e"].get<std::string>() == "depthUpdate") {
+        market_message m;
+        m.symbol = msg["s"].get<std::string>();
+        m.type = stream_type::depth;
+
+        ERROR_LOG("process_market_message depth symbol: {}", m.symbol);
+    }
 }
 
 auto server_instance::stop() noexcept -> void {

@@ -34,7 +34,7 @@ using websocket_client_ptr = std::shared_ptr<websocket_client>;
 enum event_type { on_connect, on_close, on_error };
 
 using message_handler = std::function<void(std::string_view)>;
-using update_handler = std::function<void(std::string_view)>;
+using update_handler = std::function<void(nlohmann::json&)>;
 using status_handler = std::function<void(event_type, websocket_client_ptr clinet_ptr)>;
 
 class websocket_client {

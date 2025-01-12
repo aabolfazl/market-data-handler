@@ -23,7 +23,7 @@ namespace asio = boost::asio;
 
 namespace mdh {
 
-using message_callback = std::function<void(std::string_view)>;
+using message_callback = std::function<void(nlohmann::json&)>;
 
 class conn_pool_impl {
 
@@ -40,7 +40,7 @@ public:
     auto set_message_callback(message_callback cb) noexcept -> void;
 
 private:
-    auto on_messaget_received(std::string_view msg) noexcept -> void;
+    auto on_messaget_received(nlohmann::json& msg) noexcept -> void;
 
     std::shared_ptr<io_executor> io_exec_;
     std::vector<websocket_client_ptr> clients_;

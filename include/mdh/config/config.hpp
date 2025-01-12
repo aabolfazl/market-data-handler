@@ -43,6 +43,15 @@ struct connection_config {
         }
         return "unknown";
     }
+
+    static stream_type string_to_type(const std::string& type) {
+        if (type == "depth") {
+            return stream_type::depth;
+        } else if (type == "trade") {
+            return stream_type::trade;
+        }
+        return stream_type::depth;
+    }
 };
 
 struct worker_config {

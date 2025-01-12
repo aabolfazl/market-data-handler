@@ -23,6 +23,8 @@ struct market_message {
     std::string_view data;
     std::string_view symbol;
     mdh::stream_type type;
+    std::uint64_t timestamp;
+    std::string_view price;
 };
 
 class server_instance {
@@ -39,7 +41,7 @@ public:
     auto stop() noexcept -> void;
 
 private:
-    auto process_market_message(std::string_view msg) noexcept -> void;
+    auto process_market_message(nlohmann::json& msg) noexcept -> void;
 
     const market_data_config& config_;
     uint32_t core_id_;

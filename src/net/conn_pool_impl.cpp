@@ -34,7 +34,7 @@ conn_pool_impl::conn_pool_impl(
             conn_config.port
         );
 
-        client->set_update_handler([&](std::string_view msg) {
+        client->set_update_handler([&](nlohmann::json& msg) {
             on_messaget_received(msg);
         });
 
@@ -77,9 +77,7 @@ auto conn_pool_impl::set_message_callback(message_callback cb) noexcept -> void 
     message_cb_ = std::move(cb);
 }
 
-auto conn_pool_impl::on_messaget_received(std::string_view msg) noexcept -> void {
-    TRACE_LOG("conn_pool_impl message received {}", msg.length());
-
+auto conn_pool_impl::on_messaget_received(nlohmann::json& msg) noexcept -> void {
     if (message_cb_) {
         message_cb_(msg);
     }

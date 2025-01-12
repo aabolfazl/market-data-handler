@@ -162,7 +162,6 @@ auto websocket_client_impl::on_read(
     beast::error_code ec,
     std::size_t bytes_transferred
 ) noexcept -> void {
-    TRACE_LOG("on_read {} bytes_transferred ", bytes_transferred);
     auto start = std::chrono::high_resolution_clock::now();
 
     if (ec) {
@@ -175,6 +174,12 @@ auto websocket_client_impl::on_read(
 
     std::string response(static_cast<char*>(buffer_.data().data()), bytes_transferred);
     buffer_.consume(bytes_transferred);
+    TRACE_LOG("on_read {} bytes_transferred {}", bytes_transferred, response);
+
+    ws_.async_read(
+        buffer_, 
+        beast::bind_front_handler(&websocket_client_impl::on_read, shared_from_this())
+    );
 
     auto res_json = nlohmann::json::parse(response);
 
@@ -190,18 +195,13 @@ auto websocket_client_impl::on_read(
         }
     } else {
         if (update_handler_) {
-            update_handler_(response);
+            update_handler_(res_json);
         }
     }
-
-    ws_.async_read(
-        buffer_, 
-        beast::bind_front_handler(&websocket_client_impl::on_read, shared_from_this())
-    );
     
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    WARN_LOG("on_read duration: {} microseconds byte read {}", duration.count(),bytes_transferred);
+    // WARN_LOG("on_read duration: {} microseconds byte read {}", duration.count(),bytes_transferred);
 }
 
 auto websocket_client_impl::set_update_handler(update_handler handler) noexcept -> void {

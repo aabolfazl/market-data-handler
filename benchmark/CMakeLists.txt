@@ -15,7 +15,7 @@ set(BENCHMARK_COMMON_LIBS
 )
 
 set(BENCHMARK_SOURCES
-    smart_ptr_bench.cpp
+    memory_pool_bench.cpp
 )
 
 foreach(bench_source ${BENCHMARK_SOURCES})

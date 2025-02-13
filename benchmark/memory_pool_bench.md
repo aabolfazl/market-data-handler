@@ -14,25 +14,27 @@ This document contains benchmark results for the Market Data Handler's memory po
 
 ### Run Benchmarks
 ```bash
-$ build % ./bin/smart_ptr_bench
+$ cmake ..
+$ make
+$ ./bin/memory_pool_bench
 ```
 
 ## Benchmark Results
 ```bash
-This does not affect benchmark measurements, only the metadata output.
-Running ./bin/smart_ptr_bench
+Running ./bin/memory_pool_bench
+Run on (10 X 24 MHz CPU s)
 CPU Caches:
   L1 Data 64 KiB
   L1 Instruction 128 KiB
   L2 Unified 4096 KiB (x10)
-Load Average: 4.54, 3.71, 3.52
+Load Average: 1.94, 2.13, 2.01
 ------------------------------------------------------------
 Benchmark                  Time             CPU   Iterations
 ------------------------------------------------------------
-BM_HeapAllocation       20.2 ns         20.1 ns     34944613
-BM_CustomPool           19.4 ns         19.1 ns     37109686
-BM_BoostPool            5.16 ns         5.09 ns    137575912
+BM_HeapAllocation       19.3 ns         19.3 ns     36899785
+BM_CustomPool           1.04 ns         1.03 ns    673977720
+BM_BoostPool            5.00 ns         4.99 ns    138800761
 ```
 
 ## Analysis
-Benchmark analysis and comparisons will be documented in this section.
+- The custom memory pool implementation is faster than the heap allocation and Boost pool.

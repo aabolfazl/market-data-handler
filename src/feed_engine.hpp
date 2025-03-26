@@ -29,11 +29,14 @@
 
 namespace mdh {
 
-class mdh_app {
+class feed_engine {
 public:
-    explicit mdh_app(const market_data_config& config) noexcept;
+    explicit feed_engine(const market_data_config& config) noexcept;
     auto init() noexcept -> void;
     auto run() noexcept -> void;
+
+    auto add_feed() noexcept -> void;
+    auto remove_feed() noexcept -> void;
 
 private:
     const market_data_config& config_;

@@ -13,18 +13,35 @@
 
 #include "logger/logger.hpp"
 #include "mdh/config/config.hpp"
-#include "mdh_app.hpp"
+#include "feed_engine.hpp"
 
 inline auto create_v1_config() -> mdh::market_data_config {
     const std::vector<std::string> main_pairs = {
-        "btcusdt", "ethusdt", "bnbusdt", "solusdt", "xrpusdt",
-        "adausdt", "dogeusdt", "maticusdt", "avaxusdt", "linkusdt",
-        "ethbtc", "bnbbtc", "solbtc", "xrpbtc", "adabtc",
-        "btcbusd", "ethbusd", "bnbbusd", "solbusd", "xrpbusd",
+    "btcusdt", "ethusdt", "bnbusdt", "solusdt", "xrpusdt",
+    "adausdt", "dogeusdt", "maticusdt", "avaxusdt", "linkusdt",
+    
+    // USDT Pairs - Additional
+    "dotusdt", "atomusdt", "uniusdt", "ltcusdt", "etcusdt",
+    "aaveusdt", "nearusdt", "trxusdt", "shibusdt", "sandusdt",
+    "icpusdt", "aptusdt", "opusdt", "injusdt", "arbusdt",
+    
+    // BTC Pairs
+    "ethbtc", "bnbbtc", "solbtc", "xrpbtc", "adabtc",
+    "dotbtc", "atombtc", "unibtc", "ltcbtc", "trxbtc",
+    
+    // BUSD Pairs
+    "btcbusd", "ethbusd", "bnbbusd", "solbusd", "xrpbusd",
+    "adabusd", "dogebusd", "maticbusd", "avaxbusd", "linkbusd",
+    
+    // ETH Pairs
+    "bnbeth", "soleth", "linketh", "maticeth", "atometh",
+    
+    // Stablecoin Cross-Pairs
+    "busdusdt", "usdcusdt", "usdcbusd", "eurusdt", "gbpusdt"
     };
 
-    constexpr uint32_t cores = 2;         
-    constexpr uint32_t sockets_per_core = 2;    
+    constexpr uint32_t cores = 8;
+    constexpr uint32_t sockets_per_core = 4;
     constexpr uint32_t symbols_per_socket = 5;
 
     std::vector<mdh::worker_config> workers;
@@ -80,12 +97,12 @@ inline auto create_v1_config() -> mdh::market_data_config {
     };
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     std::cout << "Market Data Handler project going to the moon 🚀!" << std::endl;
     mdh::logger::init();
 
     const auto config = create_v1_config();
-    mdh::mdh_app app{config};
+    mdh::feed_engine app{config};
 
     app.init();
     app.run();

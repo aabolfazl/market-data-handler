@@ -46,7 +46,7 @@ auto server_instance::process_market_message(nlohmann::json& msg) noexcept -> vo
         m.timestamp = msg["T"].get<std::uint64_t>();
         m.price = msg["p"].get<std::string>();
 
-        ERROR_LOG("process_market_message trade symbol: {}", m.symbol);
+        WARN_LOG("process_market_message trade symbol: {}", m.symbol);
     } else if(msg.contains("e") && msg["e"].get<std::string>() == "depthUpdate") {
         market_message m;
         m.symbol = msg["s"].get<std::string>();

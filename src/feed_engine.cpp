@@ -9,17 +9,17 @@
  *
  */
 
-#include "mdh_app.hpp"
+#include "feed_engine.hpp"
 #include "logger/logger.hpp"
 #include "io/io_executor_impl.hpp"
 
 namespace mdh {
 
-mdh_app::mdh_app(const market_data_config& config) noexcept : config_(config) {
+feed_engine::feed_engine(const market_data_config& config) noexcept : config_(config) {
     TRACE_LOG("mdh_app constructor");
 }
 
-auto mdh_app::init() noexcept -> void {
+auto feed_engine::init() noexcept -> void {
     TRACE_LOG("mdh_app::init()");
 
     auto ssl_ctx = std::make_shared<asio::ssl::context>(asio::ssl::context::tlsv12_client);
@@ -34,7 +34,15 @@ auto mdh_app::init() noexcept -> void {
     }
 }
 
-auto mdh_app::run() noexcept -> void {
+auto feed_engine::add_feed() noexcept -> void {
+    TRACE_LOG("mdh_app::add_feed()");
+}
+
+auto feed_engine::remove_feed() noexcept -> void {
+    TRACE_LOG("mdh_app::remove_feed()");
+}
+
+auto feed_engine::run() noexcept -> void {
     TRACE_LOG("mdh_app::run()");
 
     for (const auto& [core_id, server] : servers_map_) {

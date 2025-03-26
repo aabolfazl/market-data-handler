@@ -1,7 +1,7 @@
-### Real-time Crypto Market Data Handler System
+### Real-time Crypto Market Data Handler Library
 
 Purpose:
-- Real-time market data processing from Binance
+- Real-time market data processing library from Exchanges (Binance, Bitfinex, etc.)
 - Order book state management
 - Market statistics calculation
 - Data distribution for trading strategies
@@ -35,8 +35,3 @@ Core Features:
 - Low CPU usage
 - Scalable architecture
 - High availability
-
-4. Data Distribution
-- Trading signals generation
-- Market data broadcasting
-- WebSockets server

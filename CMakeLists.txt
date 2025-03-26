@@ -67,7 +67,10 @@ FetchContent_Declare(
     GIT_TAG v1.8.3
     GIT_SHALLOW TRUE
 )
+set(CMAKE_BUILD_TYPE_SAVE ${CMAKE_BUILD_TYPE})
+set(CMAKE_BUILD_TYPE Release)
 FetchContent_MakeAvailable(benchmark)
+set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE_SAVE})
 
 find_package(Boost 1.83.0 REQUIRED COMPONENTS
     system
@@ -80,10 +83,10 @@ find_package(OpenSSL REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
 
 add_executable(${PROJECT_NAME}
-    src/main.cpp
+    main.cpp
 
-    src/mdh_app.hpp
-    src/mdh_app.cpp
+    src/feed_engine.hpp
+    src/feed_engine.cpp
 
     src/common/traits.h
 

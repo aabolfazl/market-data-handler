@@ -201,7 +201,7 @@ auto websocket_client_impl::on_read(
     
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    // WARN_LOG("on_read duration: {} microseconds byte read {}", duration.count(),bytes_transferred);
+    INFO_LOG("on_read duration: {} microseconds byte read {}", duration.count(),bytes_transferred);
 }
 
 auto websocket_client_impl::set_update_handler(update_handler handler) noexcept -> void {

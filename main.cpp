@@ -12,100 +12,19 @@
 #include <iostream>
 
 #include "logger/logger.hpp"
-#include "mdh/config/config.hpp"
-#include "feed_engine.hpp"
-
-inline auto create_v1_config() -> mdh::market_data_config {
-    const std::vector<std::string> main_pairs = {
-    "btcusdt", "ethusdt", "bnbusdt", "solusdt", "xrpusdt",
-    "adausdt", "dogeusdt", "maticusdt", "avaxusdt", "linkusdt",
-    
-    // USDT Pairs - Additional
-    "dotusdt", "atomusdt", "uniusdt", "ltcusdt", "etcusdt",
-    "aaveusdt", "nearusdt", "trxusdt", "shibusdt", "sandusdt",
-    "icpusdt", "aptusdt", "opusdt", "injusdt", "arbusdt",
-    
-    // BTC Pairs
-    "ethbtc", "bnbbtc", "solbtc", "xrpbtc", "adabtc",
-    "dotbtc", "atombtc", "unibtc", "ltcbtc", "trxbtc",
-    
-    // BUSD Pairs
-    "btcbusd", "ethbusd", "bnbbusd", "solbusd", "xrpbusd",
-    "adabusd", "dogebusd", "maticbusd", "avaxbusd", "linkbusd",
-    
-    // ETH Pairs
-    "bnbeth", "soleth", "linketh", "maticeth", "atometh",
-    
-    // Stablecoin Cross-Pairs
-    "busdusdt", "usdcusdt", "usdcbusd", "eurusdt", "gbpusdt"
-    };
-
-    constexpr uint32_t cores = 8;
-    constexpr uint32_t sockets_per_core = 4;
-    constexpr uint32_t symbols_per_socket = 5;
-
-    std::vector<mdh::worker_config> workers;
-    workers.reserve(cores);
-
-    for (uint32_t core_id = 0; core_id < cores; ++core_id) {
-        std::vector<mdh::connection_config> connections;
-        connections.reserve(sockets_per_core);
-
-        size_t start_idx = core_id * sockets_per_core * symbols_per_socket;
-
-        for (size_t conn_id = 0; conn_id < sockets_per_core; ++conn_id) {
-            std::vector<std::string> conn_symbols;
-            size_t symbol_start = start_idx + (conn_id * symbols_per_socket);
-            for (size_t i = 0; i < symbols_per_socket && symbol_start + i < main_pairs.size(); ++i) {
-                conn_symbols.push_back(main_pairs[symbol_start + i]);
-            }
-
-            mdh::connection_config conn{
-                .symbols = std::move(conn_symbols),
-                .streams = {mdh::stream_type::depth, mdh::stream_type::trade},
-                .endpoint = "stream.binance.com",
-                .port = "443",
-                .core_id = core_id,
-                .max_message_rate = 5000,
-                .auto_reconnect = true,
-                .ping_interval_ms = 60 * 1000 * 3,  // 3 minutes
-                .reconnect_delay_ms = 1000
-            };
-            connections.push_back(std::move(conn));
-        }
-
-        mdh::worker_config worker{
-            .name = fmt::format("worker_{}", core_id),
-            .core_id = core_id,
-            .connections = std::move(connections),
-            .order_book_depth = 20,
-            .maintain_full_depth = false,
-            .message_queue_size = 1000
-        };
-
-        workers.push_back(std::move(worker));
-    }
-
-    return mdh::market_data_config{
-        .workers = std::move(workers),
-        .enable_snapshots = true,
-        .snapshot_interval = 1000,
-        .pre_allocated_books = 20,
-        .memory_pool_size = 1 << 20,
-        .enable_metrics = true,
-        .metrics_port = 9090
-    };
-}
+#include "feed/binance_feed.hpp"
+#include "io/io_executor_impl.hpp"
 
 int main(int argc, char* argv[]) {
     std::cout << "Market Data Handler project going to the moon 🚀!" << std::endl;
     mdh::logger::init();
 
-    const auto config = create_v1_config();
-    mdh::feed_engine app{config};
+    auto io_context = std::make_shared<mdh::io_executor_impl>(0);
+    mdh::binance_feed binance_feed{io_context};
 
-    app.init();
-    app.run();
+    binance_feed.subscribe("btcusdt",[](mdh::market_message msg){
+
+    });
 
     return 0;
 }

@@ -84,16 +84,13 @@ include_directories(${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
 
 add_executable(${PROJECT_NAME}
     main.cpp
-
-    src/feed_engine.hpp
-    src/feed_engine.cpp
-
+    
     src/common/traits.h
 
     src/logger/logger.hpp
 
-    src/server_instance.hpp
-    src/server_instance.cpp
+    src/feed/binance_feed.hpp
+    src/feed/binance_feed.cpp
 
     src/net/conn_pool_impl.hpp
     src/net/conn_pool_impl.cpp

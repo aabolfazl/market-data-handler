@@ -110,16 +110,22 @@
         "**/.git": true,
         "**/node_modules": true
     },
-    
     "editor.inlayHints.enabled": "offUnlessPressed",
-    "clangd.path": "/opt/homebrew/opt/llvm/bin/clangd",
+    "clangd.path": "/usr/bin/clangd",
     "clangd.arguments": [
         "--background-index",
         "--completion-style=detailed",
-        "--header-insertion=iwyu",
+        "--header-insertion=never",
         "--all-scopes-completion",
         "--pch-storage=memory",
-        "--clang-tidy"
+        "--clang-tidy",
+        "--offset-encoding=utf-16",
+        "--function-arg-placeholders=false"
     ],
-    "C_Cpp.intelliSenseEngine": "Disabled"
+    "editor.fontSize": 18,
+    "editor.cursorSmoothCaretAnimation": "on",
+    "editor.bracketPairColorization.enabled": true,
+    "editor.inlineSuggest.enabled": true,
+    "editor.smoothScrolling": true,
+    "editor.scrollBeyondLastLine": true,
 }

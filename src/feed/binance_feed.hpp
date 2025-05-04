@@ -27,26 +27,18 @@ struct market_message {
     std::string_view price;
 };
 
-class server_instance {
+class binance_feed {
 public:
-    explicit server_instance(
-        std::shared_ptr<io_executor> io_executor,
-        std::shared_ptr<asio::ssl::context> ssl_ctx,
-        const market_data_config& config,
-        uint32_t core_id
-    ) noexcept;
-    ~server_instance();
+    explicit binance_feed(std::shared_ptr<io_executor> io_executor) noexcept;
 
-    auto start() noexcept -> void;
-    auto stop() noexcept -> void;
+    ~binance_feed();
+
+    void subscribe(std::string, std::function<void(market_message)> cb);
 
 private:
-    auto process_market_message(nlohmann::json& msg) noexcept -> void;
+    auto process_market_message(std::string_view msg) noexcept -> void;
 
-    const market_data_config& config_;
-    uint32_t core_id_;
     io_executor_ptr io_exec_;
-    std::shared_ptr<asio::ssl::context> ssl_ctx_;
     std::unique_ptr<conn_pool_impl> conn_pool_;
 };
 } // namespace mdh

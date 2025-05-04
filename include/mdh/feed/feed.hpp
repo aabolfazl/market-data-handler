@@ -11,19 +11,23 @@
 
 #pragma once
 
+#include <string>
 #include <vector>
+
 namespace mdh {
 
+class base_feed {
 
-struct feed {
     std::vector<std::string> symbols;
     std::string websocket_url;
     std::string name;
-    
-    feed(std::string name, std::string websocket_url, std::vector<std::string> symbols) : name(name), websocket_url(websocket_url), symbols(symbols) {
+public:
+    base_feed(std::string name, std::string websocket_url, std::vector<std::string> symbols) :
+        name(name), websocket_url(websocket_url), symbols(symbols) {
+    }
 
+    void start() {
     }
 };
-
 
 } // namespace mdh

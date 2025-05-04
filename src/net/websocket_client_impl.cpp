@@ -10,20 +10,19 @@
  */
 
 #include "websocket_client_impl.hpp"
+#include <boost/asio/buffer.hpp>
 #include "logger/logger.hpp"
 
 namespace mdh {
-websocket_client_impl::websocket_client_impl(
-    const std::shared_ptr<io_executor>& io_exec,
-    const std::shared_ptr<asio::ssl::context>& ssl_ctx,
-    const std::string& host,
-    const std::string& port
-) noexcept : io_executor_(io_exec),
+websocket_client_impl::websocket_client_impl(const std::shared_ptr<io_executor>& io_exec,
+                                             const std::shared_ptr<asio::ssl::context>& ssl_ctx,
+                                             const std::string& host, const std::string& port) noexcept :
+    io_executor_(io_exec),
     ssl_ctx_(ssl_ctx),
     host_(host),
     port_(port),
-    resolver_(io_exec->context()), ws_(io_exec->context(), *ssl_ctx)
-{
+    resolver_(io_exec->context()),
+    ws_(io_exec->context(), *ssl_ctx) {
     TRACE_LOG("websocket_client_impl constructor host: {} port: {}", host_, port_);
 }
 
@@ -31,20 +30,12 @@ auto websocket_client_impl::open() noexcept -> void {
     TRACE_LOG("start websocket_client_impl");
 
     resolver_.async_resolve(
-        host_, port_,
-        [self = shared_from_this()](
-            beast::error_code ec,
-            asio::ip::tcp::resolver::results_type results
-        ) {
-            self->on_resolse(ec, results);
-        }
-    );
+        host_, port_, [self = shared_from_this()](beast::error_code ec, asio::ip::tcp::resolver::results_type results)
+        { self->on_resolse(ec, results); });
 }
 
-auto websocket_client_impl::on_resolse(
-    beast::error_code ec,
-    asio::ip::tcp::resolver::results_type results
-) noexcept -> void {
+auto websocket_client_impl::on_resolse(beast::error_code ec, asio::ip::tcp::resolver::results_type results) noexcept
+    -> void {
     if (ec) {
         ERROR_LOG("on_resolse: {}", ec.message());
         if (status_handler_) {
@@ -57,24 +48,16 @@ auto websocket_client_impl::on_resolse(
 
     beast::get_lowest_layer(ws_).async_connect(
         results,
-        [self = shared_from_this()](
-            beast::error_code ec,
-            asio::ip::tcp::resolver::results_type::endpoint_type ep
-        ) {
-            self->on_connect(ec, ep);
-        }
-    );
+        [self = shared_from_this()](beast::error_code ec, asio::ip::tcp::resolver::results_type::endpoint_type ep)
+        { self->on_connect(ec, ep); });
 }
 
-auto websocket_client_impl::on_connect(beast::error_code ec, asio::ip::tcp::resolver::results_type::endpoint_type ep) noexcept -> void {
+auto websocket_client_impl::on_connect(beast::error_code ec,
+                                       asio::ip::tcp::resolver::results_type::endpoint_type ep) noexcept -> void {
     TRACE_LOG("on_connect");
 
-    ws_.next_layer().async_handshake(
-        asio::ssl::stream_base::client,
-        [self = shared_from_this()](beast::error_code ec) {
-             self->on_ssl_handshake(ec); 
-        }
-    );
+    ws_.next_layer().async_handshake(asio::ssl::stream_base::client,
+                                     [self = shared_from_this()](beast::error_code ec) { self->on_ssl_handshake(ec); });
 }
 
 auto websocket_client_impl::on_ssl_handshake(beast::error_code ec) noexcept -> void {
@@ -88,15 +71,7 @@ auto websocket_client_impl::on_ssl_handshake(beast::error_code ec) noexcept -> v
         return;
     }
 
-    ws_.async_handshake(
-        host_, 
-        "/ws", 
-        [self = shared_from_this()](
-            beast::error_code ec
-        ) { 
-            self->on_handshake(ec); 
-        }
-    );
+    ws_.async_handshake(host_, "/ws", [self = shared_from_this()](beast::error_code ec) { self->on_handshake(ec); });
 }
 
 auto websocket_client_impl::on_handshake(beast::error_code ec) noexcept -> void {
@@ -117,30 +92,16 @@ auto websocket_client_impl::on_handshake(beast::error_code ec) noexcept -> void 
     ws_.async_read(buffer_, beast::bind_front_handler(&websocket_client_impl::on_read, shared_from_this()));
 }
 
-auto websocket_client_impl::send_req(nlohmann::json& request, message_handler handler) noexcept -> void{
-    int token = ++last_token;
-    request["id"] = std::to_string(token);
+auto websocket_client_impl::send(std::string_view message) noexcept -> void {
 
-    on_air_req_map_[token] = handler;
+    INFO_LOG("request: {}", message);
 
-    auto str = request.dump();
-
-    INFO_LOG("request: {}",str);
-
-    ws_.async_write(
-        asio::buffer(str),
-        [self = shared_from_this()](
-            beast::error_code ec, std::size_t bytes_transferred
-        ) {
-            self->on_write(ec, bytes_transferred); 
-        }
-    );
+    ws_.async_write(asio::buffer(message),
+                    [self = shared_from_this()](beast::error_code ec, std::size_t bytes_transferred)
+                    { self->on_write(ec, bytes_transferred); });
 }
 
-auto websocket_client_impl::on_write(
-    beast::error_code ec,
-    std::size_t bytes_transferred
-) noexcept -> void {
+auto websocket_client_impl::on_write(beast::error_code ec, std::size_t bytes_transferred) noexcept -> void {
     TRACE_LOG("send request result {}", bytes_transferred);
 };
 
@@ -158,10 +119,7 @@ Also I need to implement a buffer pool to reduce the number of allocations and d
 and also reduce the memory fragmentation, and reduce the time spent on memory allocation and deallocation.
 
 */
-auto websocket_client_impl::on_read(
-    beast::error_code ec,
-    std::size_t bytes_transferred
-) noexcept -> void {
+auto websocket_client_impl::on_read(beast::error_code ec, std::size_t bytes_transferred) noexcept -> void {
     auto start = std::chrono::high_resolution_clock::now();
 
     if (ec) {
@@ -172,37 +130,23 @@ auto websocket_client_impl::on_read(
         return;
     }
 
-    std::string response(static_cast<char*>(buffer_.data().data()), bytes_transferred);
-    buffer_.consume(bytes_transferred);
-    TRACE_LOG("on_read {} bytes_transferred {}", bytes_transferred, response);
+    auto bytes = buffer_.data();
+    std::string_view view{reinterpret_cast<const char*>(boost::asio::buffer_sequence_begin(bytes)),
+                          boost::asio::buffer_size(bytes)};
 
-    ws_.async_read(
-        buffer_, 
-        beast::bind_front_handler(&websocket_client_impl::on_read, shared_from_this())
-    );
-
-    auto res_json = nlohmann::json::parse(response);
-
-    if (res_json.contains("id") && !res_json["id"].is_null()) {
-        int id = std::stoi(res_json["id"].get<std::string>());
-        TRACE_LOG("id is {}",id);
-        auto it = on_air_req_map_.find(id);
-        if (it != on_air_req_map_.end()) {
-            std::string json_str = res_json.dump();
-            it->second(json_str);
-        } else {
-            ERROR_LOG("No handler found for ID: {}", id);
-        }
-    } else {
-        if (update_handler_) {
-            update_handler_(res_json);
-        }
+    if (update_handler_) {
+        update_handler_(view);
     }
-    
+
+    buffer_.consume(bytes_transferred);
+
+    ws_.async_read(buffer_, beast::bind_front_handler(&websocket_client_impl::on_read, shared_from_this()));
+
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    INFO_LOG("on_read duration: {} microseconds byte read {}", duration.count(),bytes_transferred);
+    INFO_LOG("on_read duration: {} microseconds {} byte read", duration.count(), bytes_transferred);
 }
+
 
 auto websocket_client_impl::set_update_handler(update_handler handler) noexcept -> void {
     update_handler_ = std::move(handler);
@@ -214,15 +158,9 @@ auto websocket_client_impl::set_status_handler(status_handler handler) noexcept 
 
 auto websocket_client_impl::close() noexcept -> void {
     TRACE_LOG("close websocket_client_impl on");
-    
-    ws_.async_close(
-        websocket::close_code::normal, 
-        [self = shared_from_this()](
-            beast::error_code ec
-        ) {
-            self->on_close(ec);
-        }
-    );
+
+    ws_.async_close(websocket::close_code::normal,
+                    [self = shared_from_this()](beast::error_code ec) { self->on_close(ec); });
 }
 
 auto websocket_client_impl::on_close(beast::error_code ec) noexcept -> void {

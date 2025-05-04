@@ -32,7 +32,7 @@ public:
 
     ~websocket_client_impl();
 
-    auto send_req(nlohmann::json& request, message_handler handler) noexcept -> void override;
+    auto send(std::string_view message) noexcept -> void override;
     auto set_update_handler(update_handler handler) noexcept -> void override;
     auto set_status_handler(status_handler handler) noexcept -> void override;
 
@@ -70,7 +70,6 @@ private:
 
     websocket::stream<boost::asio::ssl::stream<beast::tcp_stream>> ws_;
 
-    std::unordered_map<int, message_handler> on_air_req_map_;
 
     int last_token = 0;
 

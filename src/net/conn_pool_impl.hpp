@@ -12,39 +12,32 @@
 #pragma once
 
 #include <memory>
-#include <string>
 
 #include <boost/beast/ssl.hpp>
 #include "mdh/config/config.hpp"
 #include "mdh/io/io_executor.hpp"
 #include "mdh/websocket_client.hpp"
 
-namespace asio = boost::asio;
 
 namespace mdh {
 
-using message_callback = std::function<void(nlohmann::json&)>;
+using message_callback = std::function<void(std::string_view msg)>;
 
 class conn_pool_impl {
 
 public:
-    explicit conn_pool_impl(
-        const std::shared_ptr<io_executor>& io_exec,
-        const std::shared_ptr<asio::ssl::context>& ctx,
-        uint32_t core_id,
-        const market_data_config& config
-    ) noexcept;
+    explicit conn_pool_impl(const std::shared_ptr<io_executor>& io_exec, const connection_config conn_config) noexcept;
 
     ~conn_pool_impl();
 
     auto set_message_callback(message_callback cb) noexcept -> void;
 
 private:
-    auto on_messaget_received(nlohmann::json& msg) noexcept -> void;
+    auto on_messaget_received(std::string_view msg) noexcept -> void;
 
     std::shared_ptr<io_executor> io_exec_;
     std::vector<websocket_client_ptr> clients_;
-    const market_data_config& config_;
+
     message_callback message_cb_;
 };
 
